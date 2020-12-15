@@ -19,15 +19,16 @@ const part2formula = (busses, delay) => {
     let find = 1;
     let buss = BigInt(busses[find]);
     let crntDelay = BigInt(delay[find]);
+    // I'll leave it here for comparing-reasons - not needed for working solution
     let modulus = BigInt(solution%buss);
     console.log(buss, solution, buss, crntDelay, solution%buss);
     while (notSolved) {
-        // const departure = solution - (solution%buss) + buss;
-        // if (departure == (solution + crntDelay)) {
-        if ((buss - modulus - crntDelay) === 0n) {
+        // Please see the readme for more depth on this
+        if (BigInt((solution+crntDelay)%buss) === 0n) {
             console.log('a.)', solution - modulus + buss);
             console.log('b.)', solution + crntDelay);
             console.log('c.)', buss - modulus - crntDelay);
+            console.log('d.)', (solution+crntDelay)%buss);
             factor = BigInt(lcm(busses.filter((_buss, index) => index <= find)));
             // console.log(solution, factor, busses[find-1], buss);
             find++;
@@ -36,17 +37,16 @@ const part2formula = (busses, delay) => {
             } else {
                 buss = BigInt(busses[find]);
                 crntDelay = BigInt(delay[find]);
+                // I'll leave it here for comparing-reasons - not needed for working solution
                 modulus = BigInt(solution%buss);
             }
         } else {
             solution += BigInt(factor);
+            // I'll leave it here for comparing-reasons - not needed for working solution
             modulus = BigInt(solution%buss);
         }
     }
-    /* Works on every example
-     * running the actual input seems to grow too large for basic integer (2^53) 
-     * it fail on the forth input (13 with 36 delays)...
-     **/
+
     return solution;
 };
 
@@ -80,12 +80,5 @@ run(rawInput);
 console.log('\npart 2 - EXAMPLE')
 run(example, true);
 
-
-// Haven't got this shit to work yet =/ every example does but not this one
 console.log('\npart 2 - INPUT')
 run(rawInput, true);
-
-/*
-9007199254740992
-100000000000000
-*/
