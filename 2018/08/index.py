@@ -8,8 +8,6 @@ l=f.read().split('\n')
 ilist = tuple(int(i) for i in l[0].split(" "))
 s = 0
 
-alist = ['a', 'b', 'c', 'd']
-
 def x(i):
     global s
     # node-sum
