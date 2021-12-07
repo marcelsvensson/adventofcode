@@ -23,11 +23,11 @@ boards = boards.reshape(axis3D,5,5)
 winner = False
 matchingMatrix = False
 numStep = []
-# Keep going while no winner is found
-while winner != True:
+# Keep going while there are boards in play
+while boards.size > 0:
     step = int(steps.pop(0))
     numStep.append(step)
-    # Keep adding steps into a list, we then generate a bool-mask when we match values on each board   
+    # Keep adding steps into a list, we then generate a bool-mask when we match values on each board 
     isinVar = np.isin(boards, numStep)
     # We then check this mask in both x- and y-axis to find complete rows
     matchingMatrisAxis2 = np.any(np.all(isinVar, axis=2), axis=1)
@@ -39,10 +39,18 @@ while winner != True:
         matchingMatrix = matchingMatrisAxis1
 
     if type(matchingMatrix) != bool:
-        # Use the mask to get the winning board and flatten to 1d
-        winningBoard = boards[matchingMatrix,:].flatten()
-        # (overkill) - reapply the mask but invert, then get the sum and multiply with the last step
-        print(np.sum(winningBoard[np.isin(winningBoard, numStep, invert=True)]) * step)
-        # We have a winner
-        winner = True
-
+        if winner == False:
+            # Use the mask to get the winning board and flatten to 1d
+            winningBoard = boards[matchingMatrix,:].flatten()
+            # (overkill) - reapply the mask but invert, then get the sum and multiply with the last step
+            print('Winner (part 1):', np.sum(winningBoard[np.isin(winningBoard, numStep, invert=True)]) * step)
+            # We have a winner
+            winner = True
+        elif boards.size == 25:
+            loosingBoard = boards[matchingMatrix,:].flatten()
+            # We have a looser
+            print('Last place (part 2):', np.sum(loosingBoard[np.isin(loosingBoard, numStep, invert=True)]) * step)
+        # Keep the boards that was not affected by the mask
+        boards = boards[~matchingMatrix,:]
+        # Reset matchingMatrix
+        matchingMatrix = False
