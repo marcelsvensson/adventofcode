@@ -9,12 +9,12 @@ from io import StringIO
 f=open("input.txt", "r")
 l=f.read().split('\n')
 
-derp = ''
+inputTxt = ''
 
 for r in l:
-    derp += ' '.join(list(r)) + '\n'
+    inputTxt += ' '.join(list(r)) + '\n'
 
-board = np.genfromtxt(StringIO(derp), delimiter=' ', dtype='int8', autostrip=True)
+board = np.genfromtxt(StringIO(inputTxt), delimiter=' ', dtype='int8', autostrip=True)
 
 # get the size
 rows, cols = board.shape
@@ -52,8 +52,64 @@ diffAxis1Flipped = np.flipud(np.fliplr(diffAxis1Flipped))
 # we can now stack each mask, since they're booleans we should only get the values where each mask is True
 mask = diffAxis0 & diffAxis1 & diffAxis0Flipped & diffAxis1Flipped
 maskedBoard = board[mask]
+
 # apply extra point
 maskedBoard += 1
 # profit
 print('part 1', maskedBoard.sum())
 
+# Get all the coords from the solution in part 1
+divotCoords = np.argwhere(mask == True)
+
+# Make a copy of the board and set every 9 (highest points to -1)
+boardMkII = board.copy()
+boardMkII[boardMkII == 9] = -1
+
+# Helper function to check if coord is not already checked or already in queue
+def shouldCheckForFuture(x, y, checkedCoord, controlQueue):
+    return boardMkII[x, y] != -1 and (str(x)+':'+str(y)) not in checkedCoord and (str(x)+':'+str(y)) not in controlQueue
+
+# This function adds surrounding coords (cross-shape) for > -1 (inside the bounds of the board) already not in control-queue or checked-list into control-queue for future checking
+def countCluster(x, y, checkedCoord, controlQueue):
+    xM=x-1
+    xP=x+1
+    yM=y-1
+    yP=y+1
+    if xM >= 0 and shouldCheckForFuture(xM, y, checkedCoord, controlQueue):
+        controlQueue.append((str(xM)+':'+str(y)))
+    if xP < rows and shouldCheckForFuture(xP, y, checkedCoord, controlQueue):
+        controlQueue.append((str(xP)+':'+str(y)))
+    if yM >= 0 and shouldCheckForFuture(x, yM, checkedCoord, controlQueue):
+        controlQueue.append((str(x)+':'+str(yM)))
+    if yP < cols and shouldCheckForFuture(x, yP, checkedCoord, controlQueue):
+        controlQueue.append((str(x)+':'+str(yP)))
+    return controlQueue
+
+# Placeholder for points in each cluster
+clusterPoints = []
+
+# Go through every coord from part 1
+for x, y in divotCoords:
+    point = 0
+    checkedCoord = []
+    # add initial coord to control-queue
+    controlQueue = [str(x)+':'+str(y)]
+    # keep going while there's stuff in the control-queue
+    while len(controlQueue):
+        # Pop the last coord and map int into separate int values
+        coords = controlQueue.pop()
+        x, y = list(map(int, coords.split(':')))
+        # send those coords to the function to queue up future control
+        controlQueue = countCluster(x, y, checkedCoord, controlQueue)
+        # add point
+        point += 1
+        # mark coord as checked
+        checkedCoord.append(str(x)+':'+str(y))
+    # add all the points from the initial point into the placeholder
+    clusterPoints.append(point)
+
+# sort the array, highest values at the end after this
+clusterPoints.sort()
+
+# Sum the value of a tripple pop - profit?
+print('part 2', clusterPoints.pop() * clusterPoints.pop() * clusterPoints.pop())
